@@ -8,7 +8,18 @@
 <meta property="og:title" content="Quanto vale o seu ponto da Variational?">
 <meta property="og:description" content="Três números decidem o valor. Ajuste e veja a cotação dos seus pontos. Por @0xMoochi.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://variational-calculadora.vercel.app/">
+<meta property="og:site_name" content="Calculadora de pontos da Variational">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:image" content="https://variational-calculadora.vercel.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Calculadora de pontos da Variational: FDV × % do airdrop ÷ pontos no TGE. Por @0xMoochi.">
+<link rel="canonical" href="https://variational-calculadora.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Quanto vale o seu ponto da Variational?">
+<meta name="twitter:description" content="Três números decidem o valor. Ajuste e veja a cotação dos seus pontos. Por @0xMoochi.">
+<meta name="twitter:image" content="https://variational-calculadora.vercel.app/og.png">
 <meta name="theme-color" content="#0D1118">
 <meta name="twitter:creator" content="@0xMoochi">
 <meta name="twitter:site" content="@0xMoochi">
@@ -555,11 +566,13 @@ const I18N = {
 };
 
 /* ============ Estado ============ */
+const DEFAULTS = { points: 1000, alloc: 10, endDate: '2026-09-30' };
+let defaultLang = 'pt';
 const state = {
   lang: 'pt',
-  points: 1000, fdv: 1e9, alloc: 10,
+  points: DEFAULTS.points, fdv: 1e9, alloc: DEFAULTS.alloc,
   totalMode: 'auto', totalManual: 9_150_000,
-  endDate: '2026-09-30', campaign: false,
+  endDate: DEFAULTS.endDate, campaign: false,
   gridMode: 'point',
 };
 let fdvTouched = false;
@@ -815,19 +828,25 @@ function renderMarket() {
 }
 
 let urlTimer;
+// A URL só ganha parâmetros quando algo difere do padrão
 function shareParams() {
-  const p = new URLSearchParams({ p: state.points });
+  const p = new URLSearchParams();
+  if (state.points !== DEFAULTS.points) p.set('p', state.points);
   if (fdvTouched) p.set('fdv', Math.round(state.fdv));
-  p.set('a', state.alloc);
+  if (state.alloc !== DEFAULTS.alloc) p.set('a', state.alloc);
   if (state.totalMode === 'manual') p.set('t', state.totalManual);
-  if (state.endDate !== '2026-09-30') p.set('end', state.endDate);
+  if (state.endDate !== DEFAULTS.endDate) p.set('end', state.endDate);
   if (state.campaign) p.set('c', 1);
-  if (state.lang !== 'pt') p.set('lang', state.lang);
+  if (state.lang !== defaultLang) p.set('lang', state.lang);
   return p;
 }
 function syncUrl() {
   clearTimeout(urlTimer);
-  urlTimer = setTimeout(() => history.replaceState(null, '', '?' + shareParams().toString()), 300);
+  urlTimer = setTimeout(() => {
+    const qs = shareParams().toString();
+    const next = location.pathname + (qs ? '?' + qs : '') + location.hash;
+    if (next !== location.pathname + location.search + location.hash) history.replaceState(null, '', next);
+  }, 300);
 }
 
 function renderAll() { renderStatic(); renderInputs(); renderTicket(); renderGrid(); renderMarket(); syncUrl(); }
@@ -896,8 +915,8 @@ if ('IntersectionObserver' in window) {
   if (n('t')) { state.totalMode = 'manual'; state.totalManual = n('t'); }
   if (/^\d{4}-\d{2}-\d{2}$/.test(q.get('end') || '')) state.endDate = q.get('end');
   if (q.get('c') === '1') state.campaign = true;
-  if (q.get('lang') === 'en' || q.get('lang') === 'pt') state.lang = q.get('lang');
-  else if (!(navigator.language || '').toLowerCase().startsWith('pt')) state.lang = 'en';
+  defaultLang = (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+  state.lang = q.get('lang') === 'en' || q.get('lang') === 'pt' ? q.get('lang') : defaultLang;
   applyLadder(PM_SNAPSHOT.ladder.map(([t, p]) => ({ t, p })), 'snapshot', PM_SNAPSHOT.volume, PM_SNAPSHOT.date);
   renderAll();
   loadPolymarket();
