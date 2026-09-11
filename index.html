@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quanto vale o seu ponto da Variational?</title>
+<meta name="description" content="Calculadora do valor dos pontos da Variational ($VAR): FDV no lançamento, % do airdrop e total de pontos no TGE, com FDV ponderado pelas odds do Polymarket.">
+<meta property="og:title" content="Quanto vale o seu ponto da Variational?">
+<meta property="og:description" content="Três números decidem o valor. Ajuste e veja a cotação dos seus pontos. Por @0xMoochi.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0D1118">
+<meta name="twitter:creator" content="@0xMoochi">
+<meta name="twitter:site" content="@0xMoochi">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D1118;
+  --panel:#151B26;
+  --inset:#0A0E14;
+  --line:#253045;
+  --text:#E6EAF2;
+  --muted:#8C96AA;
+  --accent:#4B9AF7;
+  --accent-hover:#6AADFA;
+  --accent-ink:#06101F;
+  --accent-soft:rgba(75,154,247,.12);
+  --low:#EE6F88;
+  --high:#3CCFA6;
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --body:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--body);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* Cabeçalho */
+.top{display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--text);margin-right:auto;min-width:0}
+.brand img{height:22px;width:auto;display:block}
+.brand-text{border-left:1px solid var(--line);padding-left:14px;line-height:1.25;min-width:0}
+.brand-text strong{display:block;font-family:var(--display);font-weight:600;font-size:15px;white-space:nowrap}
+.brand-text small{display:block;color:var(--muted);font-size:12px;white-space:nowrap}
+.handle{color:var(--text);text-decoration:none;font-weight:600;font-size:14.5px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;white-space:nowrap}
+.handle:hover{border-color:var(--accent);color:var(--accent)}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:3px 10px;border-radius:999px;cursor:pointer;font-size:13.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:transparent;color:var(--text);padding:9px 16px;border-radius:10px;font-weight:500;font-size:15px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.small{padding:6px 12px;font-size:14px}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-areas:'intro ticket' 'fields ticket';column-gap:40px;padding:32px 0 64px;align-items:start}
+.intro{grid-area:intro}
+.fields{grid-area:fields}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(36px,5vw,58px);line-height:1;letter-spacing:-.035em;margin:0 0 14px;max-width:14ch}
+.lead{font-size:17px;color:var(--muted);max-width:58ch;margin:0 0 20px}
+
+
+/* Painel de variáveis */
+.inputs{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2px 20px}
+.var{display:grid;grid-template-columns:235px minmax(0,1fr);column-gap:20px;padding:16px 0;border-top:1px solid var(--line)}
+.var:first-child{border-top:0}
+.var-label{padding-top:7px}
+.var-label label{display:block;font-weight:600;font-size:15.5px;line-height:1.25}
+.var-label small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:5px}
+.var-label small a{color:var(--text);text-decoration-color:var(--line)}
+.var-label small a:hover{color:var(--accent)}
+.op{font-family:var(--display);color:var(--accent);font-weight:600;margin-right:5px}
+.ctrl-row{display:flex;align-items:center;gap:14px}
+.box{display:flex;align-items:center;flex:none;width:148px;background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.box.wide{width:190px}
+.box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.box input{border:0;background:transparent;outline:0;width:100%;min-width:0;padding:7px 0;font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-.01em}
+.box span{color:var(--muted);font-size:14px;white-space:nowrap}
+.box .pre{padding-right:3px}
+.box .suf{padding-left:5px}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;min-width:0;height:26px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:5px;background:linear-gradient(to right,var(--accent) var(--fill,50%),var(--line) var(--fill,50%))}
+input[type=range]::-moz-range-track{height:5px;border-radius:5px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:5px;border-radius:5px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--bg);border:3px solid var(--accent);margin-top:-6.5px;cursor:grab}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--bg);border:3px solid var(--accent);cursor:grab}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--inset);color:var(--text);border-radius:999px;padding:2px 9px;font-size:13px;line-height:1.6;cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:var(--muted)}
+.chip b{font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.pm{border-color:rgba(60,207,166,.45)}
+.chip.pm::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--high)}
+.chip.pm.snapshot::before{background:#D9A441}
+.chip.pm[aria-pressed="true"]{border-color:var(--accent)}
+.chip.pm[aria-pressed="true"]::before{background:var(--accent-ink)}
+.sub{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.4}
+.sub input[type=date]{background:var(--inset);border:1px solid var(--line);border-radius:7px;padding:2px 6px;font-size:13px}
+.sub label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.sub input[type=checkbox]{accent-color:var(--accent);margin:0}
+.linkish{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:12.5px}
+
+/* Ticket */
+.ticket-col{grid-area:ticket;position:sticky;top:20px;align-self:start}
+.ticket{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -30px rgba(0,0,0,.8);position:relative}
+.t-top{padding:24px 28px 20px}
+.t-head{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.t-head strong{color:var(--text);font-weight:600}
+.t-price{font-size:84px;font-weight:800;line-height:1;margin:16px 0 4px;white-space:nowrap;overflow:hidden;color:#fff}
+.t-unit{color:var(--muted);font-size:15px}
+.range{margin-top:20px}
+.range-bar{position:relative;height:8px;border-radius:8px;background:linear-gradient(90deg,var(--low),#8E86E8 50%,var(--high))}
+.range-mark{position:absolute;top:-6px;width:4px;height:20px;border-radius:3px;background:#fff;box-shadow:0 0 0 2px var(--panel);transform:translateX(-50%);transition:left .25s ease}
+.range-row{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:10px}
+.range-row small{display:block;color:var(--muted);font-size:13px}
+.range-row b{font-family:var(--display);font-weight:600;font-size:18px}
+.range-row .c{text-align:center}.range-row .r{text-align:right}
+.fine{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.45}
+.t-tear{position:relative;height:0;border-top:2px dashed var(--line);margin:0 22px}
+.t-tear::before,.t-tear::after{content:"";position:absolute;top:-15px;width:28px;height:28px;border-radius:50%;background:var(--bg)}
+.t-tear::before{left:-38px;box-shadow:inset -1px 0 0 var(--line)}.t-tear::after{right:-38px;box-shadow:inset 1px 0 0 var(--line)}
+.t-bottom{padding:20px 28px 22px}
+.bag-label{font-size:14px;color:var(--muted)}
+.bag{font-size:48px;font-weight:800;color:var(--accent);line-height:1.05;margin:2px 0;white-space:nowrap;overflow:hidden}
+.bag-range{font-size:14px;color:var(--muted)}
+.formula{margin:16px 0;padding:0;display:grid;grid-template-columns:auto 1fr;row-gap:4px;font-size:14.5px}
+.formula dt{color:var(--muted)}
+.formula dd{margin:0;padding-left:12px;text-align:right;font-weight:600}
+.formula .sum{border-top:1px solid var(--line);padding-top:6px;margin-top:2px}
+
+/* Seções */
+section.block{padding:64px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(30px,4vw,44px);letter-spacing:-.03em;line-height:1.05;margin:0 0 12px}
+.section-lead{color:var(--muted);max-width:60ch;margin:0 0 32px;font-size:17px}
+
+.grid-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+table.grid{border-collapse:collapse;width:100%;min-width:720px;font-size:14.5px}
+.grid th{font-weight:600;padding:12px 10px;color:var(--muted);text-align:center;background:var(--panel)}
+.grid th.rowh{text-align:left;padding-left:18px;white-space:nowrap}
+.grid thead th{border-bottom:1px solid var(--line)}
+.grid td{padding:0;border:1px solid rgba(13,17,24,.55)}
+.grid td button{display:block;width:100%;border:0;padding:12px 8px;cursor:pointer;font-weight:500;background:transparent;font-variant-numeric:tabular-nums}
+.grid td.current button{outline:2px solid #fff;outline-offset:-3px;font-weight:700}
+.grid-tools{margin-bottom:14px}
+
+.market{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:48px;align-items:start}
+.ladder{display:grid;gap:8px}
+.lrow{display:grid;grid-template-columns:78px 1fr 48px;gap:12px;align-items:center;font-size:15px}
+.lrow .bar{height:22px;background:var(--inset);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative}
+.lrow .bar span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:5px 0 0 5px}
+.lrow .bar i{position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1px dashed var(--text);opacity:.35}
+.lrow .p{text-align:right;font-weight:600}
+.estimates{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.est-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.est-row:first-child{border-top:0;padding-top:0}
+.est-row span{color:var(--muted);font-size:15px}
+.est-row b{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-.02em}
+.est-row.main b{color:var(--accent);font-size:32px}
+.estimates p{font-size:14px;color:var(--muted);margin:12px 0 0}
+
+.sources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.sources h3{font-family:var(--display);font-size:22px;letter-spacing:-.02em;margin:0 0 8px}
+.sources p{color:var(--muted);margin:0 0 10px;font-size:15.5px}
+
+
+footer{padding:36px 0 110px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
+footer p{margin:0 0 10px;max-width:80ch}
+footer a{color:var(--text)}
+
+.mobilebar{display:none}
+
+@media (max-width:1060px){
+  .brand-text small{display:none}
+}
+@media (max-width:960px){
+  .hero{grid-template-columns:1fr;grid-template-areas:'intro' 'ticket' 'fields';row-gap:0}
+  .ticket-col{position:static;margin-bottom:24px}
+  .market{grid-template-columns:1fr;gap:28px}
+  .sources{grid-template-columns:1fr}
+  .top .btn{display:none}
+  .mobilebar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:40;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:10px 16px;align-items:center;gap:12px;box-shadow:0 12px 30px -10px rgba(0,0,0,.8);transition:transform .2s}
+  .mobilebar.hide{transform:translateY(160%)}
+  .mobilebar div{line-height:1.2}
+  .mobilebar div:last-child{text-align:right}
+  .mobilebar div:first-child{margin-right:auto}
+  .mobilebar small{display:block;color:var(--muted);font-size:12px}
+  .mobilebar b{font-family:var(--display);font-size:19px}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .top{flex-wrap:wrap;row-gap:10px}
+  .brand{flex-basis:100%}
+  .brand-text strong{font-size:14px}
+  .inputs{padding:2px 14px}
+  .var{grid-template-columns:1fr;row-gap:8px;padding:12px 0}
+  .var-label{padding-top:0}
+  .var-label small{margin-top:3px}
+  .box{width:128px}
+  .box.wide{width:100%}
+  .t-price{font-size:64px}
+  .t-top,.t-bottom{padding-left:20px;padding-right:20px}
+  .t-tear::before{left:-32px}.t-tear::after{right:-32px}
+  .lrow{grid-template-columns:64px 1fr 44px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">
+      <img src="variational-logo.png" alt="Variational" width="160" height="22">
+      <span class="brand-text"><strong data-i18n="brand"></strong><small data-i18n="brand_note"></small></span>
+    </a>
+    <a class="handle" id="handle" href="https://x.com/0xMoochi" target="_blank" rel="noopener">@0xMoochi</a>
+    <div class="seg" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="pt">PT</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <a class="btn small" href="https://omni.variational.io" target="_blank" rel="noopener" data-i18n="open"></a>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="intro">
+        <h1 data-i18n="h1"></h1>
+        <p class="lead" data-i18n="lead"></p>
+      </div>
+
+      <div class="fields">
+        <div class="inputs">
+          <div class="var">
+            <div class="var-label">
+              <label for="points" data-i18n="in_points"></label>
+              <small data-i18n-html="in_points_hint"></small>
+            </div>
+            <div>
+              <div class="box wide"><input id="points" type="number" min="0" step="any" inputmode="decimal"><span class="suf" data-i18n="pts_unit"></span></div>
+            </div>
+          </div>
+
+          <div class="var">
+            <div class="var-label">
+              <label for="fdvText"><span class="op">×</span><span data-i18n="in_fdv"></span></label>
+              <small data-i18n-html="in_fdv_hint"></small>
+            </div>
+            <div>
+              <div class="ctrl-row">
+                <div class="box"><span class="pre">$</span><input id="fdvText" type="text" inputmode="decimal" autocomplete="off"></div>
+                <input id="fdvRange" type="range" min="0" max="1000" step="1" aria-label="FDV">
+              </div>
+              <div class="chips" id="fdvChips"></div>
+            </div>
+          </div>
+
+          <div class="var">
+            <div class="var-label">
+              <label for="allocText"><span class="op">×</span><span data-i18n="in_alloc"></span></label>
+              <small data-i18n-html="in_alloc_hint"></small>
+            </div>
+            <div>
+              <div class="ctrl-row">
+                <div class="box"><input id="allocText" type="number" min="0.5" max="100" step="0.5" inputmode="decimal"><span class="suf">%</span></div>
+                <input id="allocRange" type="range" min="1" max="50" step="0.5" aria-label="%">
+              </div>
+              <div class="chips" id="allocChips"></div>
+            </div>
+          </div>
+
+          <div class="var">
+            <div class="var-label">
+              <label for="totalText"><span class="op">÷</span><span data-i18n="in_total"></span></label>
+              <small data-i18n-html="in_total_hint"></small>
+            </div>
+            <div>
+              <div class="ctrl-row">
+                <div class="box"><input id="totalText" type="text" inputmode="decimal" autocomplete="off"></div>
+                <input id="totalRange" type="range" min="6000000" max="15000000" step="50000" aria-label="Total">
+              </div>
+              <div class="sub">
+                <label><span data-i18n="end_label"></span> <input type="date" id="endDate" min="2026-01-01" max="2027-12-31"></label>
+                <label><input type="checkbox" id="campaign"> <span data-i18n="campaign_label"></span></label>
+              </div>
+              <div class="sub"><span id="emitted"></span> <button type="button" class="linkish" id="backAuto" hidden data-i18n="back_auto"></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-col">
+        <aside class="ticket" id="ticket" aria-live="polite">
+          <div class="t-top">
+            <div class="t-head"><strong data-i18n="ticket_title"></strong><span id="tDate"></span></div>
+            <div class="t-price num" id="tPrice"></div>
+            <div class="t-unit" data-i18n="per_point"></div>
+            <div class="range">
+              <div class="range-bar"><span class="range-mark" id="rMark"></span></div>
+              <div class="range-row">
+                <div><small data-i18n="low"></small><b id="rLow"></b></div>
+                <div class="c"><small data-i18n="base"></small><b id="rBase"></b></div>
+                <div class="r"><small data-i18n="high"></small><b id="rHigh"></b></div>
+              </div>
+              <p class="fine" data-i18n="range_note"></p>
+            </div>
+          </div>
+          <div class="t-tear" aria-hidden="true"></div>
+          <div class="t-bottom">
+            <div class="bag-label" id="bagLabel"></div>
+            <div class="bag num" id="tBag"></div>
+            <div class="bag-range" id="bagRange"></div>
+            <dl class="formula">
+              <dt data-i18n="f_fdv"></dt><dd id="fFdv"></dd>
+              <dt data-i18n="f_alloc"></dt><dd id="fAlloc"></dd>
+              <dt data-i18n="f_total"></dt><dd id="fTotal"></dd>
+              <dt class="sum" data-i18n="f_pp"></dt><dd class="sum" id="fPP"></dd>
+            </dl>
+            <p class="fine" data-i18n="disclaimer_short"></p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <section class="block" id="grid">
+      <h2 data-i18n="grid_h"></h2>
+      <p class="section-lead" id="gridLead"></p>
+      <div class="grid-tools">
+        <div class="seg" role="group">
+          <button type="button" data-grid="point" data-i18n="grid_point"></button>
+          <button type="button" data-grid="bag" data-i18n="grid_bag"></button>
+        </div>
+      </div>
+      <div class="grid-scroll"><table class="grid" id="gridTable"></table></div>
+    </section>
+
+    <section class="block" id="market">
+      <h2 data-i18n="market_h"></h2>
+      <p class="section-lead" data-i18n="market_lead"></p>
+      <div class="market">
+        <div>
+          <div class="ladder" id="ladder"></div>
+          <p class="fine" id="marketStatus" style="margin-top:14px"></p>
+        </div>
+        <div class="estimates">
+          <div class="est-row main"><span data-i18n="est_mean"></span><b id="estMean"></b></div>
+          <div class="est-row"><span data-i18n="est_median"></span><b id="estMedian"></b></div>
+          <p id="estTail"></p>
+          <p data-i18n="est_how"></p>
+          <p><a class="btn ghost small" href="https://polymarket.com/event/variational-fdv-above-one-day-after-launch" target="_blank" rel="noopener" data-i18n="market_open"></a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="sources">
+      <h2 data-i18n="src_h"></h2>
+      <p class="section-lead" data-i18n="src_lead"></p>
+      <div class="sources">
+        <div>
+          <h3 data-i18n="src_fdv_h"></h3>
+          <p data-i18n="src_fdv"></p>
+          <a href="https://polymarket.com/event/variational-fdv-above-one-day-after-launch" target="_blank" rel="noopener">Polymarket</a>
+        </div>
+        <div>
+          <h3 data-i18n="src_alloc_h"></h3>
+          <p data-i18n="src_alloc"></p>
+          <a href="https://docs.variational.io/token/usdvar" target="_blank" rel="noopener">docs.variational.io/token/usdvar</a>
+        </div>
+        <div>
+          <h3 data-i18n="src_total_h"></h3>
+          <p data-i18n="src_total"></p>
+          <a href="https://docs.variational.io/omni/rewards/points" target="_blank" rel="noopener">docs.variational.io/omni/rewards/points</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p data-i18n="foot"></p>
+    <p><span data-i18n="made_by"></span> <a href="https://x.com/0xMoochi" target="_blank" rel="noopener">@0xMoochi</a>. <span data-i18n="feedback"></span></p>
+  </footer>
+</div>
+
+<div class="mobilebar" id="mobilebar">
+  <div><small data-i18n="per_point"></small><b id="mPrice"></b></div>
+  <div><small data-i18n="your_bag_short"></small><b id="mBag"></b></div>
+</div>
+
+<script>
+/* ============ Configuração ============ */
+const PM_SLUG = 'variational-fdv-above-one-day-after-launch';
+
+const RETRO = 3_000_000;
+const WEEKLY = 150_000;
+const CAMPAIGN = 150_000;
+const FIRST_FRIDAY = Date.UTC(2025, 11, 19); // primeira distribuição semanal
+const WEEK_MS = 7 * 864e5;
+const FDV_MIN = 1e8, FDV_MAX = 1e10;
+
+// Referências de terceiros (PerpsMania / variational-ev). Revise antes de publicar.
+const FDV_COMPS = [
+  { name: 'Lighter', v: 2.7e9 },
+  { name: 'EdgeX', v: 6.76e8 },
+  { name: 'GRVT', v: 3.75e8 },
+  { name: 'Backpack', v: 2.2e8 },
+  { name: 'Based', v: 1.3e8 },
+];
+const ALLOC_COMPS = [
+  { name: 'dYdX', v: 7.5 },
+  { name: 'GRVT', v: 11.2 },
+  { name: 'EdgeX', v: 16 },
+  { name: 'Based', v: 23.5 },
+  { name: 'Backpack', v: 24 },
+  { name: 'Lighter', v: 25 },
+  { name: 'Hyperliquid', v: 31 },
+];
+const GRID_FDV = [2.5e8, 5e8, 7.5e8, 1e9, 1.5e9, 2e9, 3e9, 5e9];
+const GRID_ALLOC = [5, 10, 15, 20, 25, 30, 40];
+
+// Retrato do Polymarket usado quando a busca ao vivo falha (ex.: fora da Vercel)
+const PM_SNAPSHOT = {
+  date: Date.UTC(2026, 8, 11),
+  volume: 2410349,
+  ladder: [[1e8, .98], [2e8, .976], [3e8, .95], [5e8, .83], [8e8, .69], [1e9, .55], [2e9, .324], [3e9, .186], [4e9, .122], [5e9, .073]],
+};
+
+/* ============ Textos ============ */
+const I18N = {
+  pt: {
+    brand: 'Calculadora de pontos',
+    brand_note: 'projeto independente, sem vínculo com a Variational',
+    open: 'Abrir Variational',
+    made_by: 'Feito por',
+    feedback: 'Achou um erro ou tem sugestão? Me chama por lá.',
+    h1: 'Quanto vale o seu ponto da Variational?',
+    lead: 'O $VAR ainda não foi lançado e a conversão de pontos nunca foi divulgada. O valor de um ponto depende de três números: ajuste cada um e a cotação se atualiza.',
+    in_points: 'Seus pontos',
+    pts_unit: 'pontos',
+    in_fdv: 'FDV no lançamento',
+    in_points_hint: 'Seu saldo aparece na <a href="https://omni.variational.io/points" target="_blank" rel="noopener">página de pontos da Omni</a>.',
+    in_fdv_hint: 'Valor de todo o supply de $VAR no primeiro dia de negociação. O padrão é a média ponderada das odds do <a href="https://polymarket.com/event/variational-fdv-above-one-day-after-launch" target="_blank" rel="noopener">Polymarket</a>; os botões trazem o FDV de lançamento de outras perp DEXs.',
+    in_alloc: '% do airdrop',
+    in_alloc_hint: 'A <a href="https://docs.variational.io/token/usdvar" target="_blank" rel="noopener">documentação da Variational</a> fala em cerca de 50% do supply para a comunidade, distribuído ao longo do tempo em várias iniciativas. Quanto vai para esta temporada de pontos nunca foi divulgado, e esse é o número mais incerto da conta. Os botões mostram o que outras perp DEXs deram.',
+    in_total: 'Pontos no TGE',
+    in_total_hint: 'Você divide o bolo com todo mundo. Pela <a href="https://docs.variational.io/omni/rewards/points" target="_blank" rel="noopener">documentação</a>, foram 3 milhões de pontos retroativos, mais 150 mil toda sexta até o fim da temporada, no máximo no fim do 3º trimestre de 2026.',
+    chip_pm: 'Polymarket',
+    chip_pm_title_live: 'Média ponderada pelas odds do Polymarket, ao vivo',
+    chip_pm_title_snap: 'Média ponderada pelas odds do Polymarket, dados de {d}',
+    end_label: 'Fim da temporada',
+    campaign_label: '+150 mil da campanha Trader Rewards',
+    back_auto: 'Voltar ao automático',
+    emitted: 'Emitidos até hoje: {a}. Faltam {n} distribuições.',
+    emitted_done: 'Temporada encerrada em {d}.',
+    manual: 'Valor ajustado à mão.',
+    ticket_title: 'Sua cotação',
+    per_point: 'por ponto',
+    low: 'Baixa', base: 'Base', high: 'Alta',
+    range_note: 'Baixa e alta usam os FDVs com 75% e 25% de chance no Polymarket, proporcionais ao seu FDV.',
+    bag_label: 'Seus {p} pontos valem',
+    bag_range: 'de {lo} a {hi} na faixa acima',
+    f_fdv: 'FDV', f_alloc: '× % do airdrop', f_total: '÷ pontos no TGE', f_pp: '= por ponto',
+    disclaimer_short: 'Estimativa de modelo com premissas suas. Não é preço negociado.',
+    grid_h: 'Todos os cenários numa tela',
+    grid_lead: 'FDV nas linhas, % do airdrop nas colunas, com {t} pontos no TGE. Toque numa célula para levar o cenário à cotação.',
+    grid_point: 'Por ponto', grid_bag: 'Sua bag',
+    market_h: 'O que o mercado aposta',
+    market_lead: 'O Polymarket tem contratos sobre o FDV do $VAR um dia depois do lançamento. Cada barra é a chance de o FDV ficar acima daquele valor.',
+    market_live: 'Ao vivo. {vol} negociados nesses contratos.',
+    market_snap: 'Dados de {d}, com {vol} negociados. Não deu para atualizar agora; confira o valor atual no Polymarket.',
+    est_mean: 'Média ponderada',
+    est_median: 'Mediana',
+    est_tail: 'Acima de {t} há {p} de chance, e essa cauda responde por {c} da média.',
+    est_how: 'Cada faixa entre dois contratos entra com a chance de o FDV cair nela, multiplicada pelo valor médio da faixa. Acima do último contrato, a cauda segue a inclinação dos dois últimos. Por isso a média fica acima da mediana: os cenários altos pesam na conta.',
+    market_open: 'Ver no Polymarket',
+    src_h: 'De onde vem cada número',
+    src_lead: 'Para você discordar do número certo.',
+    src_fdv_h: 'FDV',
+    src_fdv: 'É o único dos três com dinheiro apostado. O valor padrão é a média das odds do Polymarket ponderada por faixa, lida ao carregar a página. Os botões das outras perp DEXs usam o FDV de lançamento delas, segundo o PerpsMania.',
+    src_alloc_h: '% do airdrop',
+    src_alloc: 'A documentação do $VAR fala em cerca de 50% dos tokens para a comunidade, distribuídos ao longo do tempo em várias iniciativas. Quanto vai para esta temporada de pontos nunca foi publicado. Cortar esse número pela metade corta pela metade todos os valores da página.',
+    src_total_h: 'Pontos no TGE',
+    src_total: 'A documentação traz 3.000.000 de pontos retroativos e distribuições toda sexta às 0h UTC, encerrando até o fim do 3º trimestre de 2026. O ritmo de 150 mil por semana foi anunciado pela Variational na primeira distribuição.',
+    foot: 'Estimativas educacionais feitas com dados públicos. Não é recomendação financeira. A Variational não divulgou a conversão de pontos nem a data do TGE, e pode alterar o programa a qualquer momento. Refaça a conta antes de tomar qualquer decisão.',
+    your_bag_short: 'Sua bag',
+  },
+  en: {
+    brand: 'Points calculator',
+    brand_note: 'independent project, not affiliated with Variational',
+    open: 'Open Variational',
+    made_by: 'Made by',
+    feedback: 'Found a bug or have a suggestion? Ping me there.',
+    h1: 'What is your Variational point worth?',
+    lead: '$VAR has not launched and the points conversion has never been published. A point’s value comes down to three numbers: set each one and the quote updates.',
+    in_points: 'Your points',
+    pts_unit: 'points',
+    in_fdv: 'FDV at launch',
+    in_points_hint: 'Your balance is on the <a href="https://omni.variational.io/points" target="_blank" rel="noopener">Omni points page</a>.',
+    in_fdv_hint: 'The value of the full $VAR supply on its first trading day. The default is the odds-weighted average from <a href="https://polymarket.com/event/variational-fdv-above-one-day-after-launch" target="_blank" rel="noopener">Polymarket</a>; the buttons bring in the launch FDV of other perp DEXs.',
+    in_alloc: 'Airdrop %',
+    in_alloc_hint: '<a href="https://docs.variational.io/token/usdvar" target="_blank" rel="noopener">Variational’s docs</a> say about 50% of supply goes to the community, spread over time across several initiatives. What this points season gets has never been published, and it is the least certain number here. The buttons show what other perp DEXs gave.',
+    in_total: 'Points at TGE',
+    in_total_hint: 'You split the pot with everyone. Per the <a href="https://docs.variational.io/omni/rewards/points" target="_blank" rel="noopener">docs</a>, 3 million points went out retroactively, plus 150K every Friday until the season ends, no later than the end of Q3 2026.',
+    chip_pm: 'Polymarket',
+    chip_pm_title_live: 'Odds-weighted average from Polymarket, live',
+    chip_pm_title_snap: 'Odds-weighted average from Polymarket, as of {d}',
+    end_label: 'Season end',
+    campaign_label: '+150K Trader Rewards campaign',
+    back_auto: 'Back to automatic',
+    emitted: 'Issued so far: {a}. {n} drops left.',
+    emitted_done: 'Season ended on {d}.',
+    manual: 'Set manually.',
+    ticket_title: 'Your quote',
+    per_point: 'per point',
+    low: 'Low', base: 'Base', high: 'High',
+    range_note: 'Low and high use the FDVs with a 75% and 25% chance on Polymarket, scaled to your FDV.',
+    bag_label: 'Your {p} points are worth',
+    bag_range: '{lo} to {hi} across the range above',
+    f_fdv: 'FDV', f_alloc: '× airdrop %', f_total: '÷ points at TGE', f_pp: '= per point',
+    disclaimer_short: 'Model estimate from your assumptions. Not a traded price.',
+    grid_h: 'Every outcome on one screen',
+    grid_lead: 'FDV down the side, airdrop % across the top, with {t} points at TGE. Tap a cell to send that scenario to the quote.',
+    grid_point: 'Per point', grid_bag: 'Your bag',
+    market_h: 'What the market is betting',
+    market_lead: 'Polymarket has contracts on $VAR’s FDV one day after launch. Each bar is the chance FDV ends above that level.',
+    market_live: 'Live. {vol} traded across these contracts.',
+    market_snap: 'As of {d}, with {vol} traded. Could not refresh right now; check the current price on Polymarket.',
+    est_mean: 'Weighted average',
+    est_median: 'Median',
+    est_tail: 'There is a {p} chance of more than {t}, and that tail accounts for {c} of the average.',
+    est_how: 'Each band between two contracts counts with its chance of holding the FDV, times the band’s average value. Above the last contract, the tail follows the slope of the last two. That is why the average sits above the median: the high scenarios carry weight.',
+    market_open: 'View on Polymarket',
+    src_h: 'Where each number comes from',
+    src_lead: 'So you can disagree with the right one.',
+    src_fdv_h: 'FDV',
+    src_fdv: 'The only one of the three with money on it. The default is the odds-weighted average of the Polymarket ladder, read on page load. The other perp DEX buttons use their launch FDV, per PerpsMania.',
+    src_alloc_h: 'Airdrop %',
+    src_alloc: 'The $VAR docs say about 50% of tokens go to the community, over time and across several initiatives. This season’s slice has never been published. Halve this number and you halve every value on the page.',
+    src_total_h: 'Points at TGE',
+    src_total: 'The docs list 3,000,000 retroactive points and drops every Friday at 00:00 UTC, ending no later than the end of Q3 2026. The 150K-a-week pace was announced by Variational at the first drop.',
+    foot: 'Educational estimates from public data. Not financial advice. Variational has not published the points conversion or a TGE date and may change the program at any time. Recheck before making any decision.',
+    your_bag_short: 'Your bag',
+  }
+};
+
+/* ============ Estado ============ */
+const state = {
+  lang: 'pt',
+  points: 1000, fdv: 1e9, alloc: 10,
+  totalMode: 'auto', totalManual: 9_150_000,
+  endDate: '2026-09-30', campaign: false,
+  gridMode: 'point',
+};
+let fdvTouched = false;
+const pm = { status: 'snapshot', ladder: [], mean: null, median: null, lowR: 0.5, highR: 1.5, volume: null, date: null, tail: null };
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+const t = (k, vars = {}) => (I18N[state.lang][k] ?? I18N.pt[k] ?? k).replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? '');
+const loc = () => (state.lang === 'pt' ? 'pt-BR' : 'en-US');
+
+/* ============ Formatação ============ */
+const nf = (x, max = 2, min = 0) => x.toLocaleString(loc(), { maximumFractionDigits: max, minimumFractionDigits: min });
+function money(usd, digits) {
+  const d = digits ?? (Math.abs(usd) < 100 ? 2 : 0);
+  return new Intl.NumberFormat(loc(), { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: d, maximumFractionDigits: d }).format(usd);
+}
+function compact(v) { // sem símbolo: "2,02 bi" / "2.02B"
+  const pt = state.lang === 'pt';
+  if (v >= 1e9) return nf(v / 1e9, 2) + (pt ? ' bi' : 'B');
+  if (v >= 1e6) return nf(v / 1e6, v >= 1e8 ? 0 : 2) + (pt ? ' mi' : 'M');
+  if (v >= 1e4) return nf(v / 1e3, 1) + (pt ? ' mil' : 'K');
+  return nf(v, 0);
+}
+const fdvFmt = (v) => '$' + compact(v);
+const ptsFmt = (v) => compact(v);
+const pct = (v, d = 1) => nf(v, d) + '%';
+const dateFmt = (ms) => new Date(ms).toLocaleDateString(loc(), { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+
+function parseCompact(raw) {
+  let s = String(raw).trim().toLowerCase().replace(/r\$|us\$|\$|usd|pontos|points|pts/g, '').replace(/\s+/g, '');
+  let mult = 1;
+  if (/(bn|bi|b)$/.test(s)) { mult = 1e9; s = s.replace(/(bn|bi|b)$/, ''); }
+  else if (/mil$/.test(s)) { mult = 1e3; s = s.replace(/mil$/, ''); }
+  else if (/(mm|mi|m)$/.test(s)) { mult = 1e6; s = s.replace(/(mm|mi|m)$/, ''); }
+  else if (/k$/.test(s)) { mult = 1e3; s = s.slice(0, -1); }
+  if (/^\d{1,3}([.,]\d{3})+$/.test(s)) s = s.replace(/[.,]/g, '');
+  else s = s.replace(',', '.');
+  const n = parseFloat(s);
+  return isFinite(n) ? n * mult : NaN;
+}
+
+/* ============ Modelo ============ */
+function endMs() { const [y, m, d] = state.endDate.split('-').map(Number); return Date.UTC(y, m - 1, d, 23, 59, 59); }
+function fridaysThrough(ms) { return ms < FIRST_FRIDAY ? 0 : Math.floor((ms - FIRST_FRIDAY) / WEEK_MS) + 1; }
+function autoTotal() { return RETRO + WEEKLY * fridaysThrough(endMs()) + (state.campaign ? CAMPAIGN : 0); }
+function totalPoints() { return state.totalMode === 'auto' ? autoTotal() : state.totalManual; }
+function weeksLeft() { return Math.max(0, fridaysThrough(endMs()) - fridaysThrough(Date.now())); }
+function issuedNow() { return RETRO + WEEKLY * Math.min(fridaysThrough(Date.now()), fridaysThrough(endMs())); }
+function perPoint(fdv = state.fdv, alloc = state.alloc, total = totalPoints()) { return total > 0 ? (fdv * alloc / 100) / total : 0; }
+
+const fdvToPos = (v) => Math.round(Math.log(v / FDV_MIN) / Math.log(FDV_MAX / FDV_MIN) * 1000);
+const posToFdv = (p) => { const raw = FDV_MIN * Math.pow(FDV_MAX / FDV_MIN, p / 1000); const step = raw >= 1e9 ? 1e7 : 5e6; return Math.round(raw / step) * step; };
+
+/* ============ Polymarket ============ */
+// ladder: [{t, p}] em ordem crescente, p = chance de FDV > t
+function fdvAtProb(ladder, target) {
+  if (target >= ladder[0].p) return ladder[0].t;
+  for (let i = 0; i < ladder.length - 1; i++) {
+    const a = ladder[i], b = ladder[i + 1];
+    if (a.p >= target && b.p <= target) {
+      const f = a.p === b.p ? 0 : (a.p - target) / (a.p - b.p);
+      return Math.exp(Math.log(a.t) + f * (Math.log(b.t) - Math.log(a.t)));
+    }
+  }
+  return ladder[ladder.length - 1].t;
+}
+// Média ponderada pelas odds: soma de (chance da faixa × valor médio da faixa)
+function weightedFdv(ladder) {
+  const logMean = (a, b) => (b - a) / Math.log(b / a); // média de uma faixa uniforme em escala log
+  const first = ladder[0], last = ladder[ladder.length - 1], prev = ladder[ladder.length - 2];
+  let mean = (1 - first.p) * first.t * 0.5; // abaixo do primeiro contrato (inclui "não lançou")
+  for (let i = 0; i < ladder.length - 1; i++) {
+    const mass = ladder[i].p - ladder[i + 1].p;
+    if (mass > 0) mean += mass * logMean(ladder[i].t, ladder[i + 1].t);
+  }
+  // Cauda acima do último contrato: Pareto com a inclinação dos dois últimos (alpha entre 2 e 6)
+  let alpha = prev.p > last.p && last.p > 0 ? Math.log(prev.p / last.p) / Math.log(last.t / prev.t) : 3;
+  alpha = Math.min(6, Math.max(2, alpha));
+  const tailContribution = last.p * last.t * alpha / (alpha - 1);
+  mean += tailContribution;
+  return { mean, tail: { t: last.t, p: last.p, c: tailContribution } };
+}
+function applyLadder(ladder, status, volume, date) {
+  ladder = ladder.map((r) => ({ ...r })).sort((a, b) => a.t - b.t);
+  for (let i = 1; i < ladder.length; i++) ladder[i].p = Math.min(ladder[i].p, ladder[i - 1].p);
+  const { mean, tail } = weightedFdv(ladder);
+  const median = fdvAtProb(ladder, 0.5);
+  const low = fdvAtProb(ladder, 0.75);
+  const high = fdvAtProb(ladder, 0.25);
+  Object.assign(pm, {
+    status, ladder, volume, date, tail, median,
+    mean: Math.round(mean / 1e7) * 1e7,
+    lowR: Math.min(1, low / mean), highR: Math.max(1, high / mean),
+  });
+  if (!fdvTouched) state.fdv = pm.mean;
+}
+function parseThreshold(text) {
+  const m = String(text).match(/\$\s?([\d.,]+)\s*(k|m|b|bn|million|billion)?/i);
+  if (!m) return null;
+  const n = parseFloat(m[1].replace(/,/g, ''));
+  const u = (m[2] || '').toLowerCase();
+  return n * (u.startsWith('b') ? 1e9 : u.startsWith('m') ? 1e6 : u === 'k' ? 1e3 : 1);
+}
+async function loadPolymarket() {
+  const urls = ['/api/polymarket', `https://gamma-api.polymarket.com/events?slug=${PM_SLUG}`];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { headers: { accept: 'application/json' } });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const ev = Array.isArray(data) ? data[0] : data;
+      if (!ev || !Array.isArray(ev.markets)) continue;
+      const ladder = ev.markets.map((mk) => {
+        let prices = mk.outcomePrices;
+        try { if (typeof prices === 'string') prices = JSON.parse(prices); } catch { prices = null; }
+        return { t: parseThreshold(mk.groupItemTitle || mk.question), p: prices ? parseFloat(prices[0]) : NaN };
+      }).filter((x) => x.t && isFinite(x.p));
+      if (ladder.length < 2) continue;
+      applyLadder(ladder, 'live', parseFloat(ev.volume) || null, Date.now());
+      renderAll();
+      return;
+    } catch (e) { /* tenta a próxima URL */ }
+  }
+}
+
+/* ============ Render ============ */
+function setIfIdle(el, val) { if (document.activeElement !== el) el.value = val; }
+function setFill(range) { range.style.setProperty('--fill', ((range.value - range.min) / (range.max - range.min)) * 100 + '%'); }
+function fitText(el, max, min = 24) {
+  let size = max; el.style.fontSize = size + 'px';
+  while (el.scrollWidth > el.clientWidth && size > min) { size -= 2; el.style.fontSize = size + 'px'; }
+}
+const near = (a, b) => Math.abs(a - b) / b < 0.005;
+
+function renderStatic() {
+  document.documentElement.lang = state.lang === 'pt' ? 'pt-BR' : 'en';
+  $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  $$('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
+  $$('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === state.lang));
+  $$('[data-grid]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.grid === state.gridMode));
+  document.title = t('h1');
+
+  const fc = $('#fdvChips');
+  fc.innerHTML = '';
+  const pmChip = document.createElement('button');
+  pmChip.type = 'button';
+  pmChip.className = 'chip pm ' + pm.status;
+  pmChip.dataset.v = pm.mean;
+  pmChip.title = pm.status === 'live' ? t('chip_pm_title_live') : t('chip_pm_title_snap', { d: dateFmt(pm.date) });
+  pmChip.innerHTML = `${t('chip_pm')} <b>${fdvFmt(pm.mean)}</b>`;
+  fc.appendChild(pmChip);
+  FDV_COMPS.forEach((c) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.v = c.v;
+    b.innerHTML = `${c.name} <b>${fdvFmt(c.v)}</b>`;
+    fc.appendChild(b);
+  });
+
+  const ac = $('#allocChips');
+  ac.innerHTML = '';
+  ALLOC_COMPS.forEach((c) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.v = c.v;
+    b.innerHTML = `${c.name} <b>${pct(c.v)}</b>`;
+    ac.appendChild(b);
+  });
+}
+
+function renderInputs() {
+  setIfIdle($('#points'), state.points);
+
+  const fr = $('#fdvRange'); fr.value = fdvToPos(Math.min(FDV_MAX, Math.max(FDV_MIN, state.fdv))); setFill(fr);
+  setIfIdle($('#fdvText'), compact(state.fdv));
+  $$('#fdvChips .chip').forEach((c) => c.setAttribute('aria-pressed', near(state.fdv, +c.dataset.v)));
+
+  const ar = $('#allocRange'); ar.value = Math.min(50, state.alloc); setFill(ar);
+  setIfIdle($('#allocText'), state.alloc);
+  $$('#allocChips .chip').forEach((c) => c.setAttribute('aria-pressed', near(state.alloc, +c.dataset.v)));
+
+  const total = totalPoints();
+  const tr = $('#totalRange'); tr.value = Math.min(tr.max, Math.max(tr.min, total)); setFill(tr);
+  setIfIdle($('#totalText'), compact(total));
+  $('#endDate').value = state.endDate;
+  $('#campaign').checked = state.campaign;
+  $('#campaign').disabled = state.totalMode !== 'auto';
+  $('#backAuto').hidden = state.totalMode === 'auto';
+  if (state.totalMode === 'manual') $('#emitted').textContent = t('manual');
+  else if (Date.now() > endMs()) $('#emitted').textContent = t('emitted_done', { d: dateFmt(endMs()) });
+  else $('#emitted').textContent = t('emitted', { a: ptsFmt(issuedNow()), n: weeksLeft() });
+}
+
+function renderTicket() {
+  const pp = perPoint();
+  const lo = pp * pm.lowR, hi = pp * pm.highR;
+  const bag = pp * state.points;
+  $('#tDate').textContent = new Date().toLocaleDateString(loc(), { day: '2-digit', month: 'short', year: 'numeric' });
+  $('#tPrice').textContent = money(pp);
+  $('#rLow').textContent = money(lo);
+  $('#rBase').textContent = money(pp);
+  $('#rHigh').textContent = money(hi);
+  const pos = hi > lo ? Math.log(pp / lo) / Math.log(hi / lo) : 0.5;
+  $('#rMark').style.left = (Math.min(1, Math.max(0, pos)) * 100) + '%';
+  $('#bagLabel').textContent = t('bag_label', { p: nf(state.points, 0) });
+  $('#tBag').textContent = money(bag);
+  $('#bagRange').textContent = t('bag_range', { lo: money(bag * pm.lowR), hi: money(bag * pm.highR) });
+  $('#fFdv').textContent = fdvFmt(state.fdv);
+  $('#fAlloc').textContent = pct(state.alloc);
+  $('#fTotal').textContent = ptsFmt(totalPoints());
+  $('#fPP').textContent = money(pp);
+  $('#mPrice').textContent = money(pp);
+  $('#mBag').textContent = money(bag);
+  fitText($('#tPrice'), window.innerWidth <= 560 ? 64 : 84, 32);
+  fitText($('#tBag'), 48);
+}
+
+function renderGrid() {
+  const total = totalPoints();
+  $('#gridLead').textContent = t('grid_lead', { t: ptsFmt(total) });
+  const mult = state.gridMode === 'bag' ? state.points : 1;
+  const vals = GRID_FDV.flatMap((f) => GRID_ALLOC.map((a) => perPoint(f, a, total) * mult)).filter((v) => v > 0);
+  if (!vals.length) { $('#gridTable').innerHTML = ''; return; }
+  const lmin = Math.log(Math.min(...vals)), lmax = Math.log(Math.max(...vals));
+  const curF = GRID_FDV.reduce((b, f) => Math.abs(Math.log(f / state.fdv)) < Math.abs(Math.log(b / state.fdv)) ? f : b);
+  const curA = GRID_ALLOC.reduce((b, a) => Math.abs(a - state.alloc) < Math.abs(b - state.alloc) ? a : b);
+
+  let html = '<thead><tr><th class="rowh">FDV</th>' + GRID_ALLOC.map((a) => `<th scope="col">${pct(a, 0)}</th>`).join('') + '</tr></thead><tbody>';
+  GRID_FDV.forEach((f) => {
+    html += `<tr><th scope="row" class="rowh">${fdvFmt(f)}</th>`;
+    GRID_ALLOC.forEach((a) => {
+      const v = perPoint(f, a, total) * mult;
+      const k = lmax > lmin ? (Math.log(v) - lmin) / (lmax - lmin) : 0.5;
+      const mix = Math.round(6 + k * 84);
+      const style = `background:color-mix(in srgb, var(--accent) ${mix}%, var(--panel));color:${mix > 58 ? 'var(--accent-ink)' : 'var(--text)'}`;
+      html += `<td class="${f === curF && a === curA ? 'current' : ''}" style="${style}"><button type="button" data-f="${f}" data-a="${a}" style="color:inherit">${money(v)}</button></td>`;
+    });
+    html += '</tr>';
+  });
+  $('#gridTable').innerHTML = html + '</tbody>';
+}
+
+function renderMarket() {
+  $('#ladder').innerHTML = pm.ladder.map((r) => `
+    <div class="lrow">
+      <span>${fdvFmt(r.t)}</span>
+      <div class="bar" role="img" aria-label="${fdvFmt(r.t)}: ${pct(r.p * 100, 0)}"><span style="width:${(r.p * 100).toFixed(1)}%"></span><i></i></div>
+      <span class="p">${pct(r.p * 100, 0)}</span>
+    </div>`).join('');
+  const vol = pm.volume ? '$' + compact(pm.volume) : '—';
+  $('#marketStatus').textContent = pm.status === 'live' ? t('market_live', { vol }) : t('market_snap', { d: dateFmt(pm.date), vol });
+  $('#estMean').textContent = fdvFmt(pm.mean);
+  $('#estMedian').textContent = fdvFmt(pm.median);
+  $('#estTail').textContent = t('est_tail', { t: fdvFmt(pm.tail.t), p: pct(pm.tail.p * 100, 0), c: fdvFmt(pm.tail.c) });
+}
+
+let urlTimer;
+function shareParams() {
+  const p = new URLSearchParams({ p: state.points });
+  if (fdvTouched) p.set('fdv', Math.round(state.fdv));
+  p.set('a', state.alloc);
+  if (state.totalMode === 'manual') p.set('t', state.totalManual);
+  if (state.endDate !== '2026-09-30') p.set('end', state.endDate);
+  if (state.campaign) p.set('c', 1);
+  if (state.lang !== 'pt') p.set('lang', state.lang);
+  return p;
+}
+function syncUrl() {
+  clearTimeout(urlTimer);
+  urlTimer = setTimeout(() => history.replaceState(null, '', '?' + shareParams().toString()), 300);
+}
+
+function renderAll() { renderStatic(); renderInputs(); renderTicket(); renderGrid(); renderMarket(); syncUrl(); }
+function renderLive() { renderInputs(); renderTicket(); renderGrid(); syncUrl(); }
+
+/* ============ Eventos ============ */
+const num = (v) => { const n = parseFloat(v); return isFinite(n) && n >= 0 ? n : 0; };
+const onEnter = (el) => el.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.blur(); });
+
+$('#points').addEventListener('input', (e) => { state.points = num(e.target.value); renderLive(); });
+
+$('#fdvRange').addEventListener('input', (e) => { state.fdv = posToFdv(+e.target.value); fdvTouched = true; renderLive(); });
+$('#fdvText').addEventListener('change', (e) => {
+  let v = parseCompact(e.target.value);
+  if (v > 0 && v < 1e5) v *= 1e6; // "800" vira 800M
+  if (v >= 1e6) { state.fdv = Math.min(1e11, v); fdvTouched = true; }
+  e.target.value = compact(state.fdv); renderLive();
+});
+onEnter($('#fdvText'));
+$('#fdvChips').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  state.fdv = +c.dataset.v; fdvTouched = !c.classList.contains('pm'); renderLive();
+});
+
+$('#allocRange').addEventListener('input', (e) => { state.alloc = +e.target.value; renderLive(); });
+$('#allocText').addEventListener('input', (e) => { const v = num(e.target.value); if (v > 0 && v <= 100) { state.alloc = v; renderLive(); } });
+$('#allocText').addEventListener('change', (e) => { e.target.value = state.alloc; });
+onEnter($('#allocText'));
+$('#allocChips').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  state.alloc = +c.dataset.v; renderLive();
+});
+
+$('#totalRange').addEventListener('input', (e) => { state.totalMode = 'manual'; state.totalManual = +e.target.value; renderLive(); });
+$('#totalText').addEventListener('change', (e) => {
+  let v = parseCompact(e.target.value);
+  if (v > 0 && v < 1000) v *= 1e6; // "9.5" vira 9,5M
+  if (v >= 1e5) { state.totalMode = 'manual'; state.totalManual = Math.round(v); }
+  e.target.value = compact(totalPoints()); renderLive();
+});
+onEnter($('#totalText'));
+$('#backAuto').addEventListener('click', () => { state.totalMode = 'auto'; renderLive(); });
+$('#endDate').addEventListener('change', (e) => { if (e.target.value) { state.endDate = e.target.value; state.totalMode = 'auto'; } renderLive(); });
+$('#campaign').addEventListener('change', (e) => { state.campaign = e.target.checked; renderLive(); });
+
+$('#gridTable').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-f]'); if (!b) return;
+  state.fdv = +b.dataset.f; state.alloc = +b.dataset.a; fdvTouched = true; renderLive();
+  if (window.innerWidth < 960) $('#ticket').scrollIntoView({ block: 'center' });
+});
+$$('[data-lang]').forEach((b) => b.addEventListener('click', () => { state.lang = b.dataset.lang; renderAll(); }));
+$$('[data-grid]').forEach((b) => b.addEventListener('click', () => { state.gridMode = b.dataset.grid; renderAll(); }));
+
+window.addEventListener('resize', () => renderTicket());
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => $('#mobilebar').classList.toggle('hide', e.isIntersecting), { threshold: 0.2 }).observe($('#ticket'));
+}
+
+/* ============ Início ============ */
+(function init() {
+  const q = new URLSearchParams(location.search);
+  const n = (k) => { const v = parseFloat(q.get(k)); return isFinite(v) ? v : null; };
+  if (n('p') !== null) state.points = Math.max(0, n('p'));
+  if (n('fdv')) { state.fdv = n('fdv'); fdvTouched = true; }
+  if (n('a')) state.alloc = n('a');
+  if (n('t')) { state.totalMode = 'manual'; state.totalManual = n('t'); }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(q.get('end') || '')) state.endDate = q.get('end');
+  if (q.get('c') === '1') state.campaign = true;
+  if (q.get('lang') === 'en' || q.get('lang') === 'pt') state.lang = q.get('lang');
+  else if (!(navigator.language || '').toLowerCase().startsWith('pt')) state.lang = 'en';
+  applyLadder(PM_SNAPSHOT.ladder.map(([t, p]) => ({ t, p })), 'snapshot', PM_SNAPSHOT.volume, PM_SNAPSHOT.date);
+  renderAll();
+  loadPolymarket();
+})();
+</script>
+</body>
+</html>
